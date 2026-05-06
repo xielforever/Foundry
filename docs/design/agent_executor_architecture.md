@@ -5,7 +5,7 @@
 | **文档标题** | Foundry v1 - Agent Executor 架构设计文档 |
 | **文档作者** | Foundry Team |
 | **文档日期** | 2026-05-06 |
-| **文档版本** | v1.3 |
+| **文档版本** | v1.4 |
 | **文档描述** | Foundry v1 Agent Executor 统一接口设计，覆盖四种 Agent 类型（本地 AI CLI、远程 API、传统 CLI、人类 Gate）的接入规范、约束机制、输入输出契约和调度生命周期 |
 
 ---
@@ -26,7 +26,7 @@
 ### 前置依赖
 
 - [tech_stack_and_architecture.md](tech_stack_and_architecture.md)：技术栈选型（Go 1.22+、gRPC + Protobuf、容器化插件模型）、项目目录结构（internal/agent/、proto/、gen/）
-- [task_artifact_data_model.md](task_artifact_data_model.md)：Task/Artifact/Context/Workspace 完整字段定义、AgentType/ArtifactType 枚举、Protobuf 消息定义（common.proto/task.proto/artifact.proto）、校验错误码（9 个）、Artifact 生命周期状态机（8 个状态）、ArtifactRef 引用完整性约束、parameters 约定键
+- [task_artifact_data_model.md](task_artifact_data_model.md)：Task/Artifact/Context/Workspace 完整字段定义、AgentType/ArtifactType 枚举、Protobuf 消息定义（common.proto/task.proto/artifact.proto）、校验错误码（11 个）、Artifact 生命周期状态机（9 个状态）、ArtifactRef 引用完整性约束、parameters 约定键
 - [spec.md](../../.trae/specs/foundry-v1/spec.md)：FR-1（四种 Agent 类型）、FR-7（Agent 约束规范）
 
 ---
@@ -144,13 +144,7 @@ message ExecuteResponse {
 
 > **设计决策：ExecuteResponse 中的 Artifact 使用 file_path 而非 data 传递内容。** 原因：1) gRPC 默认最大消息大小为 4MB，而 TraditionalCLI 的单个 Artifact 可达 50MB，内联 data 会导致 gRPC 调用失败；2) Executor 将产出文件写入 Workspace.output_dir，ExecuteResponse 中的 Artifact.content 使用 file_path 引用这些文件；3) Foundry Core 在收到 ExecuteResponse 后，从 file_path 读取文件内容、计算 checksum、执行 Schema 校验，然后将完整的 Artifact（含 data 或 file_path）写入 Artifact Store。这种方式将大文件传输与 gRPC 调用解耦，符合 Deterministic Over Smart 原则。
 
-enum ExecutionStatus {
-  EXECUTION_STATUS_UNSPECIFIED = 0;
-  EXECUTION_STATUS_SUCCESS = 1;
-  EXECUTION_STATUS_FAILED = 2;
-  EXECUTION_STATUS_TIMEOUT = 3;
-  EXECUTION_STATUS_CANCELLED = 4;
-}
+// ExecutionStatus 枚举定义在 common.proto 中，executor.proto 通过 import 引用
 
 message ExecutionMetrics {
   int64 start_time_unix_ms = 1;
@@ -1222,7 +1216,7 @@ type ResourceLimits struct {
 | OQ-3.1 | ~~Executor 是否支持自定义启动前脚本（initContainer）~~ | ~~Task 7~~ | ✅ 已解决：v1 不支持自定义 initContainer，Agent 初始化通过 Executor 内部逻辑处理 |
 | OQ-3.2 | ~~gRPC Execute 的负载均衡策略~~ | ~~Task 4~~ | ✅ 已解决：最少连接数 + 加权轮询，详见 agent_registry_and_discovery.md |
 | OQ-3.3 | ~~Artifact 产出后是否自动触发下游 Step~~ | ~~Task 7~~ | ✅ 已解决：Harness Step 的完成由 Harness 管理，Foundry 不主动触发 |
-| OQ-3.4 | Executor Metrics 的更细粒度指标（内存峰值、网络 I/O） | Task 5 | v1 的 ExecutionMetrics 仅含时间维度（start_time、end_time、duration），资源级指标可在失败处理时增加 |
+| OQ-3.4 | Executor Metrics 的更细粒度指标（内存峰值、网络 I/O） | 编码阶段 | v1 的 ExecutionMetrics 仅含时间维度（start_time、end_time、duration），资源级指标在编码阶段增加 |
 | OQ-3.5 | ~~Human Gate 的 Web UI 形态~~ | ~~Task 7~~ | ✅ 已解决：v1 通过 Foundry CLI + Web Hook 回调，不提供审批 UI |
 | OQ-3.6 | ~~Agent 类型分类维度是否需要重新设计~~ | ~~Task 4~~ | ✅ 已解决（v1.2）：保留 4 种 AgentType 作为执行模板，增加 capabilities 能力声明作为第二维度。新 Agent 形态通过"选择最接近的执行模板 + 声明能力"接入，无需新增 AgentType |
 
@@ -1236,3 +1230,4 @@ type ResourceLimits struct {
 | v1.1 | 2026-05-05 | 评审修订：1) 修复 LocalAiCli 网络模式矛盾（`none` → `bridge`，Codex/Claude Code 需网络调用 API）；2) 补充 ExecuteResponse 中 Artifact 使用 file_path 而非 data 的设计决策（解决 gRPC 4MB 消息大小限制）；3) 从 ExecutionMetrics 移除 retry_count（重试由 Scheduler 管理，Executor 不感知）；4) 补充 Human Gate 超时独立于 Task.timeout_seconds 的设计决策；5) 新增 ARTIFACT_COUNT_EXCEEDS_MAX 校验码的跨文档同步说明，并同步到 Task 2；6) 修复 artifact_type 推断方式不确定问题（改为确定性规则：单类型直接分配、多类型按配置映射表）；7) 补充 Executor 配置结构说明表（通用/RemoteApi 专属/HumanGate 专属）；8) 补充 Executor 并发控制机制（信号量 + gRPC UNAVAILABLE）；9) 生命周期状态图中 Validating 拆分为 InputValidating 和 OutputValidating；10) executor.proto 显式 import common.proto；11) 修复 7 处 "Executuor/Execuor" 拼写错误 | Foundry Team |
 | v1.2 | 2026-05-05 | Capabilities 能力声明层：1) 新增 2.6 节 Capabilities 能力声明层设计（设计动机 + v1 预定义 8 种能力 + 新形态 Agent 接入示例 + 通知类 Agent Artifact 自动补全 + Capabilities 与 AgentType 关系映射）；2) GetCapabilitiesResponse 增加 capabilities 字段（Protobuf field 7）；3) TaskSpec 增加 required_capabilities 字段（Protobuf field 7）；4) Scheduler 匹配逻辑从 5 级扩展为 6 级（新增 Capabilities 匹配）；5) 新增 ARTIFACT_TYPE_EXECUTION_RECORD ArtifactType（枚举值 11），同步到 Task 2；6) Go ExecutorConfig 增加 Capabilities 字段；7) 待决问题 OQ-3.6 标记为已解决 | Foundry Team |
 | v1.3 | 2026-05-06 | 跨文档同步修正：1) Agent 分发决策流程补充精确调度模式说明（agent_id 非空时跳过发现算法，来自 Task 7）；2) 待决问题 OQ-3.1/3.2/3.3/3.5 标记为已解决 | Foundry Team |
+| v1.4 | 2026-05-06 | 一致性审查修正：1) 删除 executor.proto 中重复的 ExecutionStatus 枚举定义（已移至 common.proto）；2) 前置依赖数字更新（校验错误码 9→11，Artifact 状态 8→9）；3) OQ-3.4 解决任务更新为"编码阶段"（与 Task 5 一致） | Foundry Team |

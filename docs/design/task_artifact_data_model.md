@@ -5,7 +5,7 @@
 | **文档标题** | Foundry v1 - 核心数据模型规范文档（Task & Artifact） |
 | **文档作者** | Foundry Team |
 | **文档日期** | 2026-05-06 |
-| **文档版本** | v1.6 |
+| **文档版本** | v1.7 |
 | **文档描述** | Foundry v1 核心数据模型定义，覆盖 Task、Context、Workspace、Artifact 的完整字段规范、类型约束、序列化格式和接口契约 |
 
 ---
@@ -454,6 +454,7 @@ stateDiagram-v2
     Stored --> Referenced: 下游 Step 通过 ArtifactRef 引用
     Stored --> RolledBack: 回滚操作标记（软删除）
     Referenced --> RolledBack: 回滚操作标记（软删除）
+    RolledBack --> Stored: 恢复操作（取消回滚标记）
     RolledBack --> [*]: Pipeline 结束
     Referenced --> [*]: Pipeline 结束
     Failed --> [*]: 人工介入或回滚
@@ -473,7 +474,7 @@ stateDiagram-v2
 | Referenced | 下游 Step 通过 Context.upstream_artifacts 引用 | Harness Step |
 | RolledBack | 回滚操作将 Artifact 标记为已回滚（软删除，保留审计记录） | Failure Handler |
 
-> **RolledBack 状态说明**：回滚操作不物理删除 Artifact，而是将其状态标记为 `RolledBack`。被标记为 `RolledBack` 的 Artifact 仍保留在 Artifact Store 中用于审计追溯，但不可被下游 Step 引用。ArtifactRef 引用完整性检查时，`RolledBack` 状态的 Artifact 视为无效引用。
+> **RolledBack 状态说明**：回滚操作不物理删除 Artifact，而是将其状态标记为 `RolledBack`。被标记为 `RolledBack` 的 Artifact 仍保留在 Artifact Store 中用于审计追溯，但不可被下游 Step 引用。ArtifactRef 引用完整性检查时，`RolledBack` 状态的 Artifact 视为无效引用。恢复操作（`POST /api/v1/artifacts/{artifact_id}/restore`）可将 `RolledBack` 状态的 Artifact 恢复为 `Stored` 状态，使其重新可被引用。
 
 ---
 
@@ -1437,3 +1438,4 @@ type ValidationWarning struct {
 | v1.4 | 2026-05-05 | Task 3 评审同步：新增校验错误码 ARTIFACT_COUNT_EXCEEDS_MAX（Warning 级别，触发条件：同一 ArtifactType 产出数量超过 expected_artifact_counts 中 max_count） | Foundry Team |
 | v1.5 | 2026-05-05 | Task 3 v1.2 同步：新增 ARTIFACT_TYPE_EXECUTION_RECORD（枚举值 11），用于通知类 Agent 无自然产出时由 Foundry Core 自动构造的执行记录 Artifact | Foundry Team |
 | v1.6 | 2026-05-06 | 跨文档同步修正：1) Artifact 生命周期新增 RolledBack 状态（软删除，来自 Task 5）；2) 校验错误码新增 SECURITY_VULNERABILITY_DETECTED（Error 级别，来自 Task 5）；3) common.proto 新增 ExecutionStatus 枚举（来自 Task 3，供多 proto 共享）；4) 新增 intervention.proto 定义 InterventionStatus/RollbackGranularity/OnFailureStrategy 枚举（来自 Task 5）；5) TaskSpec 新增 expected_artifact_counts（ArtifactCountSpec）和 required_capabilities 字段（来自 Task 3）；6) 待决问题 5 项标记为已解决 | Foundry Team |
+| v1.7 | 2026-05-06 | 一致性审查修正：1) Artifact 生命周期状态机补充 RolledBack→Stored 恢复转换（与 Task 5 一致）；2) RolledBack 状态说明补充恢复操作 API | Foundry Team |

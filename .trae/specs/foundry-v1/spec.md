@@ -4,8 +4,8 @@
 |------|------|
 | **文档标题** | Foundry v1 - 产品需求文档 |
 | **文档作者** | Foundry Team |
-| **文档日期** | 2026-05-04 |
-| **文档版本** | v1.1 |
+| **文档日期** | 2026-05-07 |
+| **文档版本** | v1.2 |
 | **文档描述** | Foundry v1 产品需求定义，覆盖功能需求、非功能需求、验收标准和待决问题 |
 
 ---
@@ -23,7 +23,7 @@
 - 产出 Agent Executor 架构设计文档，覆盖四种 Agent 类型的统一抽象
 - 产出 Task 与 Artifact 数据模型规范文档
 - 产出 Harness 集成方案设计文档
-- 产出 1-2 个可复用的软件研发流程模板文档
+- 产出可复用的软件研发流程模板文档（5 个场景模板）
 - 产出失败处理与人工介入机制设计文档
 - 产出流程审计方案设计文档
 - 产出 Agent 约束规范定义，明确 Agent 不具备项目视角、架构裁决权、需求扩展权、流程决策权
@@ -76,7 +76,7 @@
 - **FR-7**: Agent 约束规范定义，明确 Agent 不具备项目视角、架构裁决权、需求扩展权、流程决策权
 - **FR-8**: 回滚机制设计，支持从任意失败点回退到已知安全状态
 - **FR-9**: Agent 注册与发现机制设计，支持 Agent 的注册、发现、配置管理
-- **FR-10**: 可复用流程模板设计，提供 1-2 个常见软件研发场景的 Pipeline 模板，包含多 Agent 分工并行示例和 Artifact 流转路径
+- **FR-10**: 可复用流程模板设计，提供常见软件研发场景的 Pipeline 模板，包含多 Agent 分工并行示例和 Artifact 流转路径
 
 ## Non-Functional Requirements
 
@@ -155,7 +155,7 @@
 ### AC-8: 可复用流程模板文档
 - **Given**: 需要为项目提供快速启动方案
 - **When**: 完成流程模板文档
-- **Then**: 至少有 1-2 个可复用的软件研发流程模板，包含多 Agent 分工并行示例、Artifact 流转路径说明、使用指南
+- **Then**: 至少有 1 个可复用的软件研发流程模板，包含多 Agent 分工并行示例、Artifact 流转路径说明、使用指南
 - **Verification**: `human-judgment`
 
 ### AC-9: Agent 注册与发现机制设计文档
@@ -174,7 +174,35 @@
 
 - [x] 具体技术栈选择（编程语言、框架等）——已解决：Go 1.22+、gRPC + Protobuf、容器化插件模型，详见 [tech_stack_and_architecture.md](../../docs/design/tech_stack_and_architecture.md)
 - [x] Harness 具体版本和集成方式——已解决：Harness SaaS + Plugin Step，详见 [harness_integration.md](../../docs/design/harness_integration.md)
-- [x] 第一版流程模板的具体场景——需在 Task 8 流程模板文档中给出选择及理由 ✅ 已解决：选择功能开发全流程 + 代码提交到生产发布，详见 docs/design/flow_templates.md
+- [x] 第一版流程模板的具体场景——已解决：5 个场景模板（功能开发全流程/代码提交到生产发布/基础设施变更/安全漏洞应急响应/生产故障应急响应），详见 [flow_templates.md](../../docs/design/flow_templates.md)
+
+> **设计阶段所有 Open Questions 已解决。** 编码阶段待决问题见 PROGRESS.md「Open Questions 追踪」中标记为「编码阶段」的条目。
+
+## 设计阶段签收
+
+| 签收项 | 状态 | 说明 |
+|--------|------|------|
+| FR-1 ~ FR-10 全部覆盖 | ✅ | 8 份设计文档 + 1 份一致性审查 |
+| AC-1 ~ AC-10 全部满足 | ✅ | 见 checklist.md 逐项验证 |
+| NFR-1 ~ NFR-5 全部满足 | ✅ | 见 checklist.md NFR 验证章节 |
+| Open Questions 全部解决 | ✅ | 3 项均已在对应 Task 中解决 |
+| 文档间一致性审查通过 | ✅ | Task 9 完成，4 项阻塞 + 8 项建议全部修正 |
+| 工程哲学验证通过 | ✅ | Flow First / Deterministic / Artifact / Replaceable 四项均通过 |
+
+**签收结论**：设计文档阶段产出物完整，可作为编码实现阶段的设计基线。所有设计文档版本号冻结，编码阶段如需修改设计文档，须走变更控制流程。
+
+**冻结版本**：
+
+| 文档 | 冻结版本 |
+|------|---------|
+| tech_stack_and_architecture.md | v1.3 |
+| task_artifact_data_model.md | v1.7 |
+| agent_executor_architecture.md | v1.4 |
+| agent_registry_and_discovery.md | v1.2 |
+| failure_handling_and_human_intervention.md | v1.2 |
+| audit_scheme.md | v1.2 |
+| harness_integration.md | v1.3 |
+| flow_templates.md | v1.3 |
 
 ## 修订历史
 
@@ -182,3 +210,4 @@
 |------|------|---------|------|
 | v1.0 | 2026-05-04 | 初始版本 | Foundry Team |
 | v1.1 | 2026-05-04 | 新增 FR-10（可复用流程模板）；统一 AC-1 Agent 类型命名；添加 AC 编号约定说明 | Foundry Team |
+| v1.2 | 2026-05-07 | 设计阶段签收：新增「设计阶段签收」章节；Open Questions 全部标记为已解决；FR-10/Goals/AC-8 更新模板数量为 5 个；冻结 8 份设计文档版本号 | Foundry Team |

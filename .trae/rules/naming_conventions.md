@@ -75,6 +75,15 @@ Agent ID 是 Agent 实例的唯一标识，遵循以下格式：
 | 全局唯一 | 同一 agent_id 不能重复注册 |
 | 配置文件名与 agent_id 一致 | `local-ai-cli-codex-v1.yaml` |
 
+**type_prefix 与 Protobuf 枚举值映射**：
+
+| type_prefix | Protobuf 枚举值 | 说明 |
+|-------------|----------------|------|
+| `local-ai-cli` | `AGENT_TYPE_LOCAL_AI_CLI` | 本地 AI CLI Agent |
+| `remote-api` | `AGENT_TYPE_REMOTE_API` | 远程 API Agent |
+| `traditional-cli` | `AGENT_TYPE_TRADITIONAL_CLI` | 传统 CLI Agent |
+| `human-gate` | `AGENT_TYPE_HUMAN_GATE` | 人类 Gate Agent |
+
 > Agent ID 命名规范详见 [agent_registry_and_discovery.md](../../docs/design/agent_registry_and_discovery.md)。
 
 ## 校验错误码命名规范

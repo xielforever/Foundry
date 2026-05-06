@@ -4,9 +4,9 @@
 |------|------|
 | **文档标题** | Foundry v1 - Progress Tracking |
 | **文档作者** | Foundry Team |
-| **文档日期** | 2026-05-06 |
-| **文档版本** | v1.9 |
-| **文档描述** | Foundry v1 设计文档阶段任务进度追踪 |
+| **文档日期** | 2026-05-07 |
+| **文档版本** | v2.2 |
+| **文档描述** | Foundry v1 进度追踪（设计文档阶段已签收，编码阶段待启动） |
 
 ---
 
@@ -15,16 +15,44 @@
 | Task | 名称 | 优先级 | 状态 | 依赖 | 阻塞原因 |
 |------|------|--------|------|------|----------|
 | Task 1 | [技术栈选型与项目架构文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.3 修订） | — | — |
-| Task 2 | [核心数据模型规范文档（Task & Artifact）](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.6 修订） | Task 1 | — |
-| Task 3 | [Agent Executor 架构设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.3 修订） | Task 2 | — |
-| Task 4 | [Agent 注册与发现机制设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成 | Task 2, Task 3 | — |
-| Task 5 | [失败处理与人工介入机制设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成 | Task 2, Task 3 | — |
-| Task 6 | [流程审计方案设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成 | Task 2, Task 3 | — |
-| Task 7 | [Harness 集成方案设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.2 修订） | Task 3, Task 5, Task 6 | — |
-| Task 8 | [可复用流程模板文档](.trae/specs/foundry-v1/tasks.md) | P1 | ✅ 已完成 | Task 7 | — |
-| Task 9 | [文档间一致性审查与修订](.trae/specs/foundry-v1/tasks.md) | P1 | ⬜ 待开始 | Task 8 | — |
+| Task 2 | [核心数据模型规范文档（Task & Artifact）](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.7 修订） | Task 1 | — |
+| Task 3 | [Agent Executor 架构设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.4 修订） | Task 2 | — |
+| Task 4 | [Agent 注册与发现机制设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.2 修订） | Task 2, Task 3 | — |
+| Task 5 | [失败处理与人工介入机制设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.2 修订） | Task 2, Task 3 | — |
+| Task 6 | [流程审计方案设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.2 修订） | Task 2, Task 3 | — |
+| Task 7 | [Harness 集成方案设计文档](.trae/specs/foundry-v1/tasks.md) | P0 | ✅ 已完成（v1.3 修订） | Task 3, Task 5, Task 6 | — |
+| Task 8 | [可复用流程模板文档](.trae/specs/foundry-v1/tasks.md) | P1 | ✅ 已完成（v1.3 修订） | Task 7 | — |
+| Task 9 | [文档间一致性审查与修订](.trae/specs/foundry-v1/tasks.md) | P1 | ✅ 已完成 | Task 8 | — |
 
 > Task 4、Task 5、Task 6 可并行执行
+
+### 🏁 里程碑：设计文档阶段签收（2026-05-07）
+
+**签收结论**：设计文档阶段全部 9 个 Task 已完成，所有 🔴 阻塞项和 🟡 建议项均已通过验证。8 份设计文档版本号冻结，可作为编码实现阶段的设计基线。
+
+**冻结版本**：
+
+| 设计文档 | 冻结版本 |
+|---------|---------|
+| tech_stack_and_architecture.md | v1.3 |
+| task_artifact_data_model.md | v1.7 |
+| agent_executor_architecture.md | v1.4 |
+| agent_registry_and_discovery.md | v1.2 |
+| failure_handling_and_human_intervention.md | v1.2 |
+| audit_scheme.md | v1.2 |
+| harness_integration.md | v1.3 |
+| flow_templates.md | v1.3 |
+
+**编码阶段待决问题**（6 项，在实现对应模块时需先给出设计决策）：
+
+| 编号 | 待决问题 | 影响模块 |
+|------|---------|---------|
+| OQ-4.3 | 自定义 Artifact 类型的 Schema 注册机制 | registry |
+| OQ-5.1 | Artifact Store 是否支持 RolledBack 状态的物理清理 | failure |
+| OQ-5.4 | Executor Metrics 的资源级指标 | agent |
+| OQ-6.1 | Artifact Store 是否需要独立于审计存储 | audit |
+| OQ-6.2 | 审计日志的合规标准 | audit |
+| OQ-7.1~7.3 | mTLS 配置 / 长连接超时 / 并发资源隔离 | harness |
 
 ## 状态说明
 
@@ -102,4 +130,7 @@
 | 2026-05-05 | Task 7 | 完成 Task 7：Harness 集成方案设计文档。关键决策：Harness SaaS + Plugin Step 集成方式（4维度选型对比）、9组概念映射+5种边界情况处理、Foundry Step Plugin Docker镜像（10输入参数+5输出+退出码映射+同步阻塞执行流程）、流程控制权矩阵（11项，Harness掌管流程控制，Foundry掌管Agent调度）、三层通信架构+K8s网络拓扑、Harness failure strategy统一MarkAsFailure（重试由Foundry内部管理）、双层审计（Harness日志+Foundry AuditStore，stdout/stderr不写入AuditStore）、回滚原子性（状态标记而非物理删除）、人工介入通过Foundry CLI操作（6种操作映射退出码）；新增SchedulerService gRPC接口（SubmitTask+GetTaskStatus）；解决8个待决问题（OQ-3.1/3.3/3.5/4.1/4.2/5.2/5.3/6.4） |
 | 2026-05-05 | Task 7 | 评审修订 v1.1：B-7.1 SubmitTaskRequest 新增 agent_id 字段（支持精确调度模式，agent_id 非空时跳过发现算法）；B-7.2 修正 Registry.Discover 调用签名与 Task 4 一致（使用完整 DiscoverRequest）；B-7.3 同步更新 spec.md Open Questions（Harness 版本选型标记为已解决）；B-7.4 SubmitTaskResponse 新增 intervention_id 字段（人工介入时 Plugin 可获取 intervention_id）；S-7.1 修正退出码语义（退出码 3 仅用于 CANCELLED，人工介入 cancel 退出码为 1）；S-7.2 OQ-7.1~7.3 同步到 PROGRESS.md；S-7.3 新增跨文档同步说明；S-7.4 Artifact Store 配置补充 |
 | 2026-05-06 | Task 1-7 | 跨文档同步修正（Task 1-7 重新评审后执行）：Task 2 v1.6（RolledBack 状态/SECURITY_VULNERABILITY_DETECTED 错误码/ExecutionStatus 枚举/intervention.proto/TaskSpec 新增 expected_artifact_counts+required_capabilities）；Task 1 v1.3（待决问题 3 项已解决/存储约束更新/proto 目录更新）；Task 3 v1.3（精确调度模式说明/OQ-3.1~3.5 已解决）；Task 7 v1.2（on_failure 改用 OnFailureStrategy 枚举/import intervention.proto） |
-| 2026-05-06 | Task 8 | 完成 Task 8：可复用流程模板设计文档。关键决策：模板 YAML 格式规范（元数据+参数定义+Pipeline定义）、参数引用机制（${param_name}语法）、2 个完整流程模板（功能开发全流程：5 Stage/9 Step/4 Gate/4 种 Agent 类型；代码提交到生产发布：4 Stage/8 Step/1 Gate/3 种 Agent 类型）、Artifact 流转路径 Mermaid 图、失败处理策略表、模板扩展规范、模板与 Harness Pipeline 映射规则；解决 spec.md 最后一个 Open Question（第一版流程模板的具体场景） |
+| 2026-05-06 | Task 8 | 完成 Task 8：可复用流程模板设计文档。关键决策：模板 YAML 格式规范（元数据+参数定义+Pipeline定义）、参数引用机制（${param_name}语法）、5 个完整流程模板（功能开发全流程/代码提交到生产发布/基础设施变更/安全漏洞应急响应/生产故障应急响应）、Artifact 流转路径 Mermaid 图、失败处理策略表、模板扩展规范、模板与 Harness Pipeline 映射规则；解决 spec.md 最后一个 Open Question（第一版流程模板的具体场景） |
+| 2026-05-06 | Task 9 | 完成 Task 9：文档间一致性审查与修订。审查发现 4 项阻塞级+8 项建议级+4 项微小问题，全部阻塞级和建议级已修正。关键修正：B-01 删除 executor.proto 重复 ExecutionStatus 定义；B-02 统一发现算法过滤顺序（状态过滤优先于 LabelSelectors）；B-03 安全扫描步骤 agent_type 从 REMOTE_API 改为 TRADITIONAL_CLI；B-04 标记 5 项 OQ 为已解决；S-02 SubmitTaskRequest 新增 timeout_seconds；S-05 Artifact 状态机补充恢复转换；S-06 人工介入流程补充 intervention_id 返回说明 |
+| 2026-05-07 | — | README/CLAUDE/PROGRESS/rules 评审修正：B-1 README/CLAUDE 项目结构树补充 flow_templates.md；B-2 CLAUDE 待决问题表更新 Task 8 状态为已解决；B-3 README/CLAUDE v1 能力边界更新模板数量为 5 个；S-1 README/CLAUDE 关键文件速查表新增 flow_templates.md 条目；S-3 PROGRESS 文档日期和版本号更新 |
+| 2026-05-07 | — | 设计文档阶段正式签收：spec.md v1.2 新增签收章节和冻结版本；checklist.md v2.0 全部检查项标记通过；PROGRESS.md 新增里程碑标记和编码阶段待决问题汇总 |

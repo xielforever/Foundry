@@ -137,7 +137,7 @@ v1 预定义能力：`ai_reasoning`、`tool_use`、`code_generation`、`code_rev
 - 流程审计与追溯
 - Agent 注册与发现
 - Agent 约束规范
-- 1–2 个可复用的软件研发流程模板
+- 5 个可复用的流程模板（覆盖开发、CI/CD、基础设施、安全、应急响应场景）
 
 ### v1 明确不做
 
@@ -213,7 +213,8 @@ Foundry/
 │   │   ├── failure_handling_and_human_intervention.md  # 失败处理与人工介入机制
 │   │   ├── audit_scheme.md                       # 流程审计方案
 │   │   ├── agent_registry_and_discovery.md       # Agent 注册与发现机制
-│   │   └── harness_integration.md                # Harness 集成方案
+│   │   ├── harness_integration.md                # Harness 集成方案
+│   │   └── flow_templates.md                    # 可复用流程模板
 │   └── assets/
 │       ├── foundry-banner.svg                   # 产品 Banner
 │       └── foundry-architecture.svg             # 架构图
@@ -254,6 +255,19 @@ Foundry/
 ├── test/                                        # 集成测试
 └── scripts/                                     # 构建/部署脚本
 ```
+
+### 关键文件速查表
+
+| 文件路径 | 标题 | 阅读目的 |
+|---------|------|---------|
+| `docs/design/tech_stack_and_architecture.md` | 技术栈选型与项目架构 | 理解 Go + gRPC + SQLite 选型理由、分层架构、模块职责划分 |
+| `docs/design/task_artifact_data_model.md` | 核心数据模型 | 理解 Task / Artifact / Context / Workspace 数据结构、Protobuf 定义、校验规则 |
+| `docs/design/agent_executor_architecture.md` | Agent Executor 架构设计 | 理解 Executor 接口、四种 AgentType 实现、Capabilities 声明、调度流程 |
+| `docs/design/failure_handling_and_human_intervention.md` | 失败处理与人工介入机制 | 理解失败检测、重试策略、人工介入操作、回滚粒度 |
+| `docs/design/audit_scheme.md` | 流程审计方案 | 理解审计事件模型、存储方案、查询接口、导出格式 |
+| `docs/design/agent_registry_and_discovery.md` | Agent 注册与发现机制 | 理解注册流程、发现算法、状态管理、动态配置 |
+| `docs/design/harness_integration.md` | Harness 集成方案 | 理解 Harness 版本选型、Step 插件集成、概念映射、流程控制权归属 |
+| `docs/design/flow_templates.md` | 可复用流程模板 | 理解模板格式规范、5 个预置模板、Artifact 流转路径、失败处理策略 |
 
 ## 当前状态
 

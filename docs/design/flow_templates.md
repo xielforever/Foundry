@@ -5,7 +5,7 @@
 | **文档标题** | Foundry v1 - 可复用流程模板设计文档 |
 | **文档作者** | Foundry Team |
 | **文档日期** | 2026-05-06 |
-| **文档版本** | v1.2 |
+| **文档版本** | v1.3 |
 | **文档描述** | Foundry v1 可复用流程模板规范定义，包含模板格式、参数化机制和 5 个完整流程模板实例 |
 
 ---
@@ -673,8 +673,8 @@ pipeline:
 
         - name: 安全漏洞扫描
           identifier: security-scan
-          agent_type: AGENT_TYPE_REMOTE_API
-          required_capabilities: [security_scan]
+          agent_type: AGENT_TYPE_TRADITIONAL_CLI
+          required_capabilities: [deterministic]
           task_spec:
             description: "扫描代码依赖中的安全漏洞"
             expected_artifact_types: [ARTIFACT_TYPE_SECURITY_SCAN_REPORT]
@@ -683,7 +683,7 @@ pipeline:
                 min_count: 1
                 max_count: 1
             parameters:
-              api_endpoint: ${security_scan_command}
+              command: ${security_scan_command}
           on_failure: retry_then_intervention
           retry_limit: 2
           timeout_seconds: 300
@@ -1176,7 +1176,7 @@ graph LR
 
 ### 5. 模板 4：安全漏洞应急响应
 
-> 安全治理核心场景。高优先级，强调速度+审计+人类全程把控。审计记录不可跳过，即使 P0 场景。Remote API Agent（安全扫描）与 Local AI CLI（补丁生成）协作。3 个人类 Gate 确保关键节点有人类确认。
+> 安全治理核心场景。高优先级，强调速度+审计+人类全程把控。审计记录不可跳过，即使 P0 场景。Local AI CLI（补丁生成）与传统 CLI Agent（安全扫描）协作。3 个人类 Gate 确保关键节点有人类确认。
 
 #### 5.1 模板元数据
 
@@ -1284,8 +1284,8 @@ pipeline:
 
         - name: 漏洞范围扫描
           identifier: scan-vulnerability-scope
-          agent_type: AGENT_TYPE_REMOTE_API
-          required_capabilities: [security_scan]
+          agent_type: AGENT_TYPE_TRADITIONAL_CLI
+          required_capabilities: [deterministic]
           task_spec:
             description: "扫描代码库中受 ${cve_id} 影响的依赖和组件"
             expected_artifact_types: [ARTIFACT_TYPE_SECURITY_SCAN_REPORT]
@@ -1294,7 +1294,7 @@ pipeline:
                 min_count: 1
                 max_count: 1
             parameters:
-              api_endpoint: ${security_scan_command}
+              command: ${security_scan_command}
           on_failure: retry_then_intervention
           retry_limit: 2
           timeout_seconds: ${scan_timeout}
@@ -1361,8 +1361,8 @@ pipeline:
       steps:
         - name: 漏洞复测
           identifier: rescan-vulnerability
-          agent_type: AGENT_TYPE_REMOTE_API
-          required_capabilities: [security_scan]
+          agent_type: AGENT_TYPE_TRADITIONAL_CLI
+          required_capabilities: [deterministic]
           task_spec:
             description: "复测修复后的代码/镜像，确认 ${cve_id} 漏洞已消除"
             expected_artifact_types: [ARTIFACT_TYPE_SECURITY_SCAN_REPORT]
@@ -1371,7 +1371,7 @@ pipeline:
                 min_count: 1
                 max_count: 1
             parameters:
-              api_endpoint: ${security_scan_command}
+              command: ${security_scan_command}
           on_failure: human_intervention
           retry_limit: 1
           timeout_seconds: ${scan_timeout}
@@ -1882,3 +1882,4 @@ graph LR
 | v1.0 | 2026-05-06 | 初始版本：模板格式规范 + 2 个完整流程模板（功能开发全流程 + 代码提交到生产发布） | Foundry Team |
 | v1.1 | 2026-05-06 | 新增 3 个 DevOps 核心场景模板：模板 3 基础设施变更（IaC plan→review→apply 模式，破坏性变更 CTO 审批，Terraform Destroy 自动回滚）、模板 4 安全漏洞应急响应（Remote API + Local AI CLI 协作，审计不可跳过）、模板 5 生产故障应急响应（AI 根因分析→人工确认→自动修复→回归验证） | Foundry Team |
 | v1.2 | 2026-05-06 | 评审修正：B-01 模板 3 补充 ai_cli_command 参数定义；B-02 模板 5 rollback_command 补充使用说明（供 Foundry Core 在 auto_rollback 时调用）；B-03 模板 4 Stage 3/4 之间增加"发布确认"Gate（安全场景不可逆操作前需人类确认）；B-04 模板 1 测试结果确认 Gate timeout_action 改为 approve（低风险操作超时自动通过示例）；S-01 模板 2 docker_build_command 说明 COMMIT_SHA 为 Harness 内置变量；S-02 参数引用机制补充 Harness 内置变量优先级说明 | Foundry Team |
+| v1.3 | 2026-05-06 | 一致性审查修正：1) 安全扫描步骤 agent_type 从 AGENT_TYPE_REMOTE_API 改为 AGENT_TYPE_TRADITIONAL_CLI（trivy 等安全扫描工具为 CLI 命令，非远程 API），parameters.api_endpoint 改为 parameters.command（影响模板 2/4 共 3 处） | Foundry Team |

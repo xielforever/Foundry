@@ -102,7 +102,7 @@ Agent 不具备（FR-7）：
 - 流程审计与追溯设计
 - Agent 注册与发现
 - Agent 约束规范
-- 1–2 个可复用的流程模板
+- 5 个可复用的流程模板（覆盖开发、CI/CD、基础设施、安全、应急响应场景）
 
 ### v1 明确不做
 - 自动规划研发流程
@@ -138,7 +138,8 @@ Foundry/
 │   │   ├── failure_handling_and_human_intervention.md  # 失败处理与人工介入机制
 │   │   ├── audit_scheme.md                      # 流程审计方案
 │   │   ├── agent_registry_and_discovery.md      # Agent 注册与发现机制
-│   │   └── harness_integration.md               # Harness 集成方案
+│   │   ├── harness_integration.md               # Harness 集成方案
+│   │   └── flow_templates.md                    # 可复用流程模板
 │   └── assets/
 │       ├── foundry-banner.svg                   # 产品 Banner
 │       └── foundry-architecture.svg             # 架构图
@@ -229,7 +230,7 @@ Foundry/
 |------|----------|------|
 | 技术栈选型（编程语言、框架） | Task 1 | ✅ Go 1.22+，详见 [tech_stack_and_architecture.md](docs/design/tech_stack_and_architecture.md) |
 | Harness 版本与集成方式 | Task 7 | ✅ Harness SaaS + Plugin Step，详见 [harness_integration.md](docs/design/harness_integration.md) |
-| 第一版流程模板的具体场景 | Task 8 | ⬜ 待解决 |
+| 第一版流程模板的具体场景 | Task 8 | ✅ 5 个模板，详见 [flow_templates.md](docs/design/flow_templates.md) |
 
 ---
 
@@ -249,6 +250,7 @@ Foundry/
 | `docs/design/audit_scheme.md` | 流程审计方案 | 理解审计日志结构、持久化、查询接口 |
 | `docs/design/agent_registry_and_discovery.md` | Agent 注册与发现机制 | 理解 Agent 注册规范、发现算法、配置管理、动态启用/禁用 |
 | `docs/design/harness_integration.md` | Harness 集成方案 | 理解 Harness 版本选型、Step 插件集成、概念映射、流程控制权归属 |
+| `docs/design/flow_templates.md` | 可复用流程模板 | 理解模板格式规范、5 个预置模板、Artifact 流转路径、失败处理策略 |
 | `.trae/specs/foundry-v1/spec.md` | 完整 PRD（FR、NFR、AC） | 理解要构建什么 |
 | `.trae/specs/foundry-v1/tasks.md` | 任务分解与依赖关系 | 决定做什么 |
 | `.trae/specs/foundry-v1/checklist.md` | 验证清单 | 标记工作完成前 |

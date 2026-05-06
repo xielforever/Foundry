@@ -5,7 +5,7 @@
 | **文档标题** | Foundry v1 - 失败处理与人工介入机制设计文档 |
 | **文档作者** | Foundry Team |
 | **文档日期** | 2026-05-05 |
-| **文档版本** | v1.1 |
+| **文档版本** | v1.2 |
 | **文档描述** | Foundry v1 失败检测规则、失败状态机、人工介入接口规范和回滚机制设计，覆盖 AC-6 和 AC-6.1 |
 
 ---
@@ -1042,9 +1042,10 @@ type InterventionResult struct {
 ```
 1. Step 进入 AwaitingIntervention 状态
 2. Foundry Core 创建 Intervention 记录
-3. 发送介入通知（Slack/Email/Webhook）
-4. 等待人类工程师操作
-5. 人类工程师通过 API 提交操作
+3. intervention_id 通过 SubmitTaskResponse 返回给 Harness Step Plugin（Plugin 可将其写入环境变量或日志供运维查询）
+4. 发送介入通知（Slack/Email/Webhook）
+5. 等待人类工程师操作
+6. 人类工程师通过 API 提交操作
    a. approve → Step 标记为 Succeeded，流程继续
    b. reject → Step 标记为 Failed，Pipeline 终止
    c. correct → 校验修正后的 Artifact，通过则 Step 恢复
@@ -1089,8 +1090,8 @@ type InterventionResult struct {
 | 编号 | 问题 | 需要解决的任务 | 说明 |
 |------|------|-------------|------|
 | OQ-5.1 | Artifact Store 是否支持 RolledBack 状态的物理清理 | 编码阶段 | 审计持久化方案已确定（SQLite/PostgreSQL），RolledBack Artifact 的保留策略和物理清理机制需在编码阶段定义 |
-| OQ-5.2 | 回滚操作的原子性保障 | Task 7 | 容器化部署时，回滚操作是否需要分布式事务保障，取决于 Harness 集成方案 |
-| OQ-5.3 | 介入操作的 Web UI 形态 | Task 7 | v1 的介入操作通过 API/CLI 执行，是否需要 Foundry 提供 Web UI |
+| OQ-5.2 | ~~回滚操作的原子性保障~~ | ~~Task 7~~ | ✅ 已解决：v1 回滚通过 Harness Step Plugin 执行，单 Step 内操作天然原子；跨 Step 回滚由 Foundry Core 串行执行，详见 harness_integration.md |
+| OQ-5.3 | ~~介入操作的 Web UI 形态~~ | ~~Task 7~~ | ✅ 已解决：v1 通过 Foundry CLI + Web Hook 回调执行介入操作，不提供 Web UI，详见 harness_integration.md |
 | OQ-5.4 | Executor Metrics 的资源级指标 | 编码阶段 | v1 的 ExecutionMetrics 仅含时间维度，资源级指标（内存峰值、网络 I/O）可在编码阶段增加 |
 
 **跨文档同步说明**：
@@ -1111,3 +1112,4 @@ type InterventionResult struct {
 |------|------|---------|------|
 | v1.0 | 2026-05-05 | 初始版本：覆盖失败检测规则（4 种场景）、失败状态机（15 个状态）、人工介入接口规范（6 种操作）、回滚机制（3 种粒度 + 4 种触发条件 + 级联回滚）、Artifact 生命周期扩展（RolledBack 状态）、ERROR_REPORT Artifact 定义 | Foundry Team |
 | v1.1 | 2026-05-05 | 评审修复：B-5.1 修正状态机 Retrying→RetryExhausted 转换逻辑；B-5.2 修正失败检测流程 D-1/D-2 触发时机；B-5.3 补充 ErrorReportContent 与标准 Artifact 结构映射；S-5.1 新增 T-4 判定规则和 SECURITY_VULNERABILITY_DETECTED 错误码；S-5.2 新增 Intervention 存储方案（interventions 表）；S-5.3 新增 on_failure 与 retry_limit 交互规则；S-5.4 FailureContext 改用 ArtifactRef 引用；S-5.5 完善跨文档同步声明；OQ-5.1 解决任务修正为编码阶段 | Foundry Team |
+| v1.2 | 2026-05-06 | 一致性审查修正：1) OQ-5.2/5.3 标记为已解决（Task 7 已解决）；2) 人工介入流程补充 intervention_id 通过 SubmitTaskResponse 返回给 Plugin 的说明 | Foundry Team |

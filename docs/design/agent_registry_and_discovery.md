@@ -5,7 +5,7 @@
 | **文档标题** | Foundry v1 - Agent 注册与发现机制设计文档 |
 | **文档作者** | Foundry Team |
 | **文档日期** | 2026-05-05 |
-| **文档版本** | v1.1 |
+| **文档版本** | v1.2 |
 | **文档描述** | Foundry v1 Agent 注册规范、发现机制和配置管理方案设计，覆盖注册信息结构、注册/注销流程、多维度发现算法、负载均衡策略和动态启用/禁用机制 |
 
 ---
@@ -316,13 +316,13 @@ type RegistryQuery struct {
   → 过滤：query.RequiredCapabilities ⊆ registration.spec.capabilities
   → 结果集 R3
 
-步骤 4：LabelSelectors 精确匹配
-  → 过滤：query.LabelSelectors 中每个 key-value 对 ∈ registration.spec.labels
-  → 结果集 R4
-
-步骤 5：状态过滤
+步骤 4：状态过滤
   → 过滤：registration.runtime.status == AVAILABLE（或 IncludeBusy 时包含 BUSY）
   → 过滤：registration.runtime.enabled == true
+  → 结果集 R4
+
+步骤 5：LabelSelectors 精确匹配
+  → 过滤：query.LabelSelectors 中每个 key-value 对 ∈ registration.spec.labels
   → 结果集 R5
 
 步骤 6：负载均衡排序
@@ -651,7 +651,7 @@ message HeartbeatRequest {
 message HeartbeatResponse {
   bool acknowledged = 1;
   bool config_changed = 2;
-  AgentRegistration updated_config = 3;
+  AgentRegistrationSpec updated_spec = 3;
 }
 ```
 
@@ -659,7 +659,7 @@ message HeartbeatResponse {
 |------|------|
 | `acknowledged` | 心跳是否被接受 |
 | `config_changed` | 配置是否有变更（热重载通知） |
-| `updated_config` | 变更后的配置（仅 config_changed=true 时有效） |
+| `updated_spec` | 变更后的静态配置（仅 config_changed=true 时有效，不含运行时状态） |
 
 > **设计决策**：心跳请求中携带 `running_tasks` 字段，原因：1) 避免额外的查询请求获取负载信息；2) 心跳是定期操作，自然携带负载信息减少通信开销；3) Scheduler 可直接从 Registry 获取负载信息用于负载均衡。
 
@@ -1009,9 +1009,9 @@ Scheduler 订阅 `AGENT_REGISTERED`、`AGENT_DEREGISTERED`、`AGENT_STATUS_CHANG
 
 | 编号 | 问题 | 需要解决的任务 | 说明 |
 |------|------|-------------|------|
-| OQ-4.1 | Registry 是否需要提供 gRPC 反射服务 | Task 7 | gRPC 反射允许客户端动态发现服务定义，便于调试；但生产环境可能需要禁用 |
-| OQ-4.2 | Agent 注册是否需要认证 | Task 7 | v1 假设内网环境，注册不需要认证；如果 Foundry 暴露到公网，需要增加认证机制 |
-| OQ-4.3 | 自定义 Artifact 类型的 Schema 注册机制 | Task 9 | Task 2 待决问题：ARTIFACT_TYPE_CUSTOM 类型的 Schema 注册机制需在一致性审查时与 Registry 的 CapabilityRegistry 统一设计 |
+| OQ-4.1 | ~~Registry 是否需要提供 gRPC 反射服务~~ | ~~Task 7~~ | ✅ 已解决：v1 不提供 gRPC 反射服务，调试通过 Foundry CLI 的 debug 命令实现 |
+| OQ-4.2 | ~~Agent 注册是否需要认证~~ | ~~Task 7~~ | ✅ 已解决：v1 假设内网环境，注册不需要认证；如暴露公网需增加认证，详见 harness_integration.md |
+| OQ-4.3 | 自定义 Artifact 类型的 Schema 注册机制 | 编码阶段 | Task 2 待决问题：ARTIFACT_TYPE_CUSTOM 类型的 Schema 注册机制需在编码阶段与 Registry 的 CapabilityRegistry 统一设计 |
 
 ---
 
@@ -1021,3 +1021,4 @@ Scheduler 订阅 `AGENT_REGISTERED`、`AGENT_DEREGISTERED`、`AGENT_STATUS_CHANG
 |------|------|---------|------|
 | v1.0 | 2026-05-05 | 初始版本：覆盖 Agent 注册规范（AgentRegistration 结构 + 校验规则 + 注册/注销流程）、发现机制（6 级过滤算法 + 3 种负载均衡策略 + CapabilityRegistry）、配置管理（YAML 格式 + 动态启用/禁用 + 热重载范围）、心跳与健康检查、存储设计（内存+快照）、事件通知机制；解决 Task 3 待决问题 OQ-3.2（负载均衡策略） | Foundry Team |
 | v1.1 | 2026-05-05 | 评审修复：1) 拆分 AgentRegistration 为 AgentRegistrationSpec（静态）+ AgentRuntimeState（动态），RegisterRequest 只传递 Spec；2) 拆分 gRPC 接口（ExecutorRegistry，3 个方法）和 Go 内部接口（Registry，8 个方法）；3) 统一发现算法过滤顺序与 Task 3 一致（AgentType → ArtifactType → Capabilities）；4) 补充 Agent 类型专属配置映射表（RemoteApi/HumanGate → parameters 键）；5) 补充 Executor 侧热重载处理规范 | Foundry Team |
+| v1.2 | 2026-05-06 | 一致性审查修正：1) 发现算法步骤 4/5 互换（状态过滤优先于 LabelSelectors，与 Task 3 一致）；2) HeartbeatResponse 字段名统一为 updated_spec（类型 AgentRegistrationSpec，与 proto 定义一致）；3) OQ-4.1/4.2 标记为已解决（Task 7 已解决）；4) OQ-4.3 更新解决任务为"编码阶段" | Foundry Team |

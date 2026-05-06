@@ -5,7 +5,7 @@
 | **文档标题** | Foundry v1 - 流程审计方案设计文档 |
 | **文档作者** | Foundry Team |
 | **文档日期** | 2026-05-05 |
-| **文档版本** | v1.1 |
+| **文档版本** | v1.2 |
 | **文档描述** | Foundry v1 审计日志数据结构、持久化方案和查询接口设计，覆盖 AC-5 |
 
 ---
@@ -1049,7 +1049,7 @@ func isSensitiveKey(key string) bool {
 | OQ-6.1 | Artifact Store 是否需要独立于审计存储 | 编码阶段 | v1 共享 SQLite 简化部署；生产环境是否需要独立 Artifact Store 取决于性能需求 |
 | OQ-6.2 | 审计日志的合规标准 | 编码阶段 | 不同行业对审计日志的保留期限和不可篡改性有不同要求，需在编码阶段确认目标合规标准 |
 | OQ-6.3 | 实时审计流的协议选择 | v2 | v2 可考虑 gRPC Server Streaming 或 SSE 推送实时审计事件 |
-| OQ-6.4 | Agent stdout/stderr 的审计存储 | Task 7 | Agent 内部日志的收集和存储方式需在 Harness 集成方案中确定 |
+| OQ-6.4 | ~~Agent stdout/stderr 的审计存储~~ | ~~Task 7~~ | ✅ 已解决：Agent stdout/stderr 由 Step Plugin 容器收集，写入 Artifact Store 作为 EXECUTION_RECORD 类型 Artifact，详见 harness_integration.md |
 
 **跨文档同步说明**：
 
@@ -1067,3 +1067,4 @@ func isSensitiveKey(key string) bool {
 |------|------|---------|------|
 | v1.0 | 2026-05-05 | 初始版本：覆盖审计日志数据结构（AuditEvent + 15 种事件类型）、持久化方案（SQLite 默认 + PostgreSQL 可选）、查询接口（gRPC + REST + 时间线 + 导出）、敏感数据脱敏规则、Artifact Store Schema、保留策略 | Foundry Team |
 | v1.1 | 2026-05-05 | 评审修复：B-6.1 修正 audit.proto ExecutionStatus import 问题（声明移至 common.proto）；B-6.2 新增 AuditService 部署架构说明；S-6.1 AuditEventInput 新增 required_capabilities 字段；S-6.2 新增 L-6.8 content_data 大小限制；S-6.3 收窄脱敏规则 auth 模式；S-6.4 新增 AuditQuerySort.field 合法值约束；S-6.5 修正审计写入保障表述；S-6.6 修正 OQ-5.1 引用；新增跨文档同步说明 | Foundry Team |
+| v1.2 | 2026-05-06 | 一致性审查修正：1) OQ-6.4 标记为已解决（Task 7 已解决） | Foundry Team |
